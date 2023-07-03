@@ -156,7 +156,7 @@ import java.time.OffsetDateTime
     }
   }
 
-// Dependency injection was used to keep DeliveryRunner.run function pure
+// Dependency inversion was used to keep DeliveryRunner.run function pure
   trait GetCurrentTime(){
     def now():OffsetDateTime
   }

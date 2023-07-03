@@ -99,6 +99,7 @@ object ConsoleObtainCustomerPhone extends ObtainCustomerPhone {
   }
 }
 
+//Dependency injection
 object JavaGetCurrentTime extends GetCurrentTime {
   def now(): OffsetDateTime = OffsetDateTime.now()
 }
