@@ -2,8 +2,13 @@ package core
 
 import java.time.OffsetDateTime
 
-case class PostalCode private (zipCode: String)
-  object PostalCode {
+  case class PostalCode private (zipCode: String)
+
+  trait PostalCodeInterface {
+    def createPostalCode(postalCode: String): Option[PostalCode]
+  }
+
+  object PostalCode extends PostalCodeInterface{
     def createPostalCode(postalCode: String): Option[PostalCode] = {
       if (postalCode.matches("\\d{5}"))
         Option(new PostalCode(postalCode))
@@ -49,7 +54,11 @@ case class PostalCode private (zipCode: String)
     }
   }
 
-  object Package {
+  trait PackageInterface {
+    def createPackage(id: String, weight: Double, postalCode: PostalCode, validPostalCodeCollection: PostalCodeCollection): Option[Package]
+  }
+
+  object Package extends PackageInterface{
     def createPackage(id: String, weight: Double, postalCode: PostalCode, validPostalCodeCollection: PostalCodeCollection): Option[Package] = {
       if (weight > 0 && validPostalCodeCollection.postalCodes.contains(postalCode))
         Option(new Package(id, weight, postalCode))
@@ -81,8 +90,12 @@ case class PostalCode private (zipCode: String)
         ((packageCollection, packageToAdd) => PackageCollection.addPackage(packageToAdd, packageCollection))
     }
   }
+
   case class Person private (name: String)
-  object Person {
+  trait PersonInterface {
+    def createPerson(name: String): Option[Person]
+  }
+  object Person extends PersonInterface{
     def createPerson(name: String): Option[Person] = {
       if (name.matches("[a-zA-Z]+"))
         Option(new Person(name))
@@ -96,7 +109,12 @@ case class PostalCode private (zipCode: String)
                                     postalCodes: PostalCodeCollection,
                                     deliveryPersonLight: Person,
                                     deliveryPersonHeavy: Person)
-  object DeliveryPlanner {
+
+  trait DeliveryPlannerInterface {
+    def createDeliveryRoutes(deliveryPlanner: DeliveryPlanner): Seq[DeliveryRoute]
+  }
+
+  object DeliveryPlanner extends DeliveryPlannerInterface {
     private val _heavyThreshold = 2.0
 
     def createDeliveryRoutes(deliveryPlanner: DeliveryPlanner): Seq[DeliveryRoute] = {
@@ -138,8 +156,6 @@ case class PostalCode private (zipCode: String)
     }
   }
 
-
-
 // Dependency injection was used to keep DeliveryRunner.run function pure
   trait GetCurrentTime(){
     def now():OffsetDateTime
@@ -161,7 +177,11 @@ case class PostalCode private (zipCode: String)
     def logError(message:String):Unit
   }
 
-  object DeliveryRunner:
+  trait DeliveryRunnerInterface {
+    def run(deliveryRoute: DeliveryRoute, getCurrentTime:GetCurrentTime, obtainCustomerDni:ObtainCustomerDni,obtainCustomerPhone:ObtainCustomerPhone, SMSSender: SMSSender, logRegister: LogRegister): Seq[DeliveryReceipt]
+  }
+
+  object DeliveryRunner extends DeliveryRunnerInterface:
     def run(deliveryRoute: DeliveryRoute, getCurrentTime:GetCurrentTime, obtainCustomerDni:ObtainCustomerDni,obtainCustomerPhone:ObtainCustomerPhone, SMSSender: SMSSender, logRegister: LogRegister): Seq[DeliveryReceipt] = {
       val packages = deliveryRoute.packages
       val postalCode = deliveryRoute.postalCode
